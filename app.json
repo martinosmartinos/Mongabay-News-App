@@ -1,0 +1,12 @@
+{
+  "expo": {
+  	"name": "Mongabay",
+    "icon": "./src/Icon-512.png",
+  	"version": "0.1.0",
+    "slug": "mongabay",
+    "sdkVersion": "24.0.0",
+    "android": {
+      "package": "com.mongabay.news"
+    }
+  }
+}

@@ -1,133 +1,192 @@
 import React from 'react';
-import { Dimensions, View, Text, TouchableWithoutFeedback, Image, WebView } from 'react-native';
-import { Actions } from 'react-native-router-flux';
-import { Icon } from 'react-native-elements';
-import textStyle from '../helpers/styles';
-
+import { Dimensions } from 'react-native';
+import StoreSettings from '../store/StoreSettings';
 
 const {height, width} = Dimensions.get('window');
 
-
-export default function renderNode(node, index, siblings, parent, defaultRenderer) {
-
-  if ((node.name == 'figure') && (node.children.length > 0)) {
-    const fig = '';
-    const caption = '';
-    const children = node.children;
-    const figwidth = Math.floor(width);
-    const figheight = 300;
-
-    children.map(x=> {
-      const item = {};
-      item[x.key] = x;
-
-      if(item[x.key].name == 'a') {
-        fig = item[x.key].children[0].attribs.src;
+export default function textStyle(){
+    return {
+      single: {
+        padding: 20,
+        backgroundColor: '#FFF'
+      },
+      header: {
+        paddingBottom: 20,
+        marginBottom: 20,
+        borderBottomWidth: 3,
+        borderColor: '#EEE'
+      },
+      title: {
+        fontSize: StoreSettings.mainfontsize,
+        alignSelf: 'flex-start', 
+        fontWeight: 'bold',
+        marginBottom: StoreSettings.mainfontsize,
+        marginLeft: 0,
+      },
+      byline: {
+        fontSize: StoreSettings.mainfontsize/1.5,
+        flex: 1,
+        alignSelf: 'flex-start',
+        marginTop: StoreSettings.mainfontsize/1.5,
+        marginBottom: StoreSettings.mainfontsize/1.5
+      },
+      date: {
+        flex: 1,
+        alignSelf: 'flex-start',
+        alignItems: 'flex-start',
+        fontSize: StoreSettings.mainfontsize - 3
+      },
+      singlesub: {
+        flexDirection: 'row'
+      },
+      singlesubleft: {
+        flex: 1,
+        alignSelf: 'flex-start'
+      },
+      singlesubright: {
+        flex: 1,
+        alignSelf: 'flex-end'
+      },
+      body: {
+        fontSize: StoreSettings.mainfontsize,
+        lineHeight: StoreSettings.mainfontsize * 1.5
+      },
+      link: {
+        fontWeight: '300',
+        color: '#45aae8',
+        fontSize: StoreSettings.mainfontsize
+      },
+      strong: {
+        fontWeight: 'bold',
+        fontSize: StoreSettings.mainfontsize
+      },
+      authorbox: {
+        paddingTop: 20,
+        paddingBottom: 20
+      },
+      badge: {
+        backgroundColor: '#45aae8',
+        marginTop: 3,
+        marginBottom: 3,
+        marginRight: 3
+      },
+      badgetext: {
+        fontSize: StoreSettings.mainfontsize
+      },
+      badgecontainer: {
+        flex: 1,
+        flexWrap: 'wrap', 
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+      },
+      bulletpoints: {
+        paddingBottom: 20,
+        marginBottom: 20,
+        borderBottomWidth: 3,
+        borderColor: '#EEE'
+      },
+      bulletitem: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        marginTop: 5,
+        marginBottom: 5
+      },
+      bullet: {
+        fontSize: StoreSettings.mainfontsize - 10,
+        fontWeight: 'bold' 
+      },
+      heading: {
+        fontSize: StoreSettings.mainfontsize + 1,
+        color: '#000',
+        fontWeight: 'bold',
+        marginBottom: 0
+      },
+      h1: {
+        fontSize: StoreSettings.mainfontsize + 1,
+        color: '#000',
+        fontWeight: 'bold',
+        marginBottom: 0
+      },
+      h2: {
+        fontSize: StoreSettings.mainfontsize + 1,
+        color: '#000',
+        fontWeight: 'bold'
+      },
+      h3: {
+        fontSize: StoreSettings.mainfontsize + 1,
+        color: '#000',
+        fontWeight: 'bold',
+        marginBottom: 0
+      },
+      featuredcont: {
+        width: width + 40,
+        minHeight: 300,
+        padding: 0,
+        marginLeft: -20,
+        marginRight: 0,
+        marginTop: 20,
+        marginBottom: 20
+      },
+      featuredimage: {
+        width: width + 40,
+        minHeight: 300,
+        padding: 0
+      },
+      embedmedia: {
+        marginLeft: -40,
+        marginRight: -40,
+        padding: 0
+      },
+      singleimage: {
+        width: null,
+        height: 300,
+        margin: 0
+      },
+      figcaption: {
+        fontSize: StoreSettings.mainfontsize - 4,
+        fontStyle: 'italic',
+        display: 'flex',
+        width: width - 10,
+        paddingLeft: 20,
+        paddingRight: 20,
+        marginTop: StoreSettings.mainfontsize - 4
+      },
+      container: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        backgroundColor: '#FFF',
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingBottom: 10,
+        marginBottom: 20,
+        elevation: 1
+      },
+      bottomContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        marginTop: 15
+      },
+      image: {
+        height: 200,
+        alignSelf: 'stretch',
+        marginRight: -10,
+        marginLeft: -10
+      },
+      icons: {
+        flex: 1,
+        alignSelf: 'flex-end',
+        alignItems: 'flex-end'
+      },
+      loader: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 50
       }
-
-      if(item[x.key].name == 'img') {
-        fig = item[x.key].attribs.src;
-        
-      }
-
-      if(item[x.key].name == 'figcaption') {
-        caption = item[x.key].children[0].data;
-      }
-      
-    });
-
-    return (
-      <View key={index} style={textStyle().featuredcont}>
-        <Image key={index} style={textStyle().featuredimage} source={{uri: fig}}/>
-        <Text style={textStyle().figcaption}>{caption.replace(/&#8217;/g,"’").replace(/&#8216;/g,"‘").replace(/&#8220;/g,"“").replace(/&#8221;/g,"”")}</Text>
-      </View>
-    );
-  }
-  
-  if ((node.name == 'ul') && (/soliloquy-slider.*/.test(node.attribs.class))) {
-    const li = node.children;
-    const sliderobj = [];
-    li.map(u=> {
-      const listitem = {};
-      listitem[u.key] = u;
-      if(listitem[u.key].children) {
-        listitem[u.key].children.map(i=> {
-          const image = {};
-          image[i.key] = i;
-          if(image[i.key].name == "img") {
-            let imgurl = '';
-            if(!/.*holder\.gif/.test(image[i.key].attribs.src)) {
-              imgurl = image[i.key].attribs.src;
-            }else if(image[i.key].attribs["data-soliloquy-src"]){
-              imgurl = image[i.key].attribs["data-soliloquy-src"];
-            }
-            const imgcap = image[i.key].attribs.alt;
-            sliderobj.push({caption: imgcap, source: {uri: imgurl}});
-          }
-        })  
-      }
-    })
-    return (
-      <TouchableWithoutFeedback onPress={()=>Actions.galleryView({ images: sliderobj})}>
-        <View key={index} style={{marginLeft: -20, marginRight: 0, marginTop: 20, marginBottom: 20}}>
-          <Image style={textStyle().featuredimage} source={{uri: sliderobj["0"].source.uri}}/>
-          <Text style={textStyle().figcaption}>{sliderobj["0"].caption}</Text>
-          <View style={{flex: 1, position: 'absolute', top: 10, alignSelf: 'flex-end'}}>
-            <Icon name='filter' size={40} color='#FFF' style={{textAlign: 'right'}}/>
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
-    );
-  }
-
-  if ((node.name == 'strong')) {
-    return(
-      <Text style={textStyle().title}>{node.children["0"].data}</Text>
-    );
-  }
-
-
-  if (node.name == 'div' && node.attribs["data-image-src"]) {
-    const prlxurl = node.attribs["data-image-src"];
-    let cap = '';
-    const prlxchildren = node.children;
-
-    prlxchildren.map(a=> {
-      const prlx = {};
-      prlx[a.key] = a;
-      prlxurl = prlx[a.key].parent.attribs["data-image-src"];
-
-      if((prlx[a.key].name == 'div') && (prlx[a.key].children["0"].name == 'span')) {
-        cap = prlx[a.key].children["0"].children["0"].data;
-      }
-    })
-
-    return (
-      <View key={index} style={textStyle().featuredcont}>
-        <Image style={textStyle().featuredimage} source={{uri: prlxurl}}/>
-        <Text style={textStyle().figcaption}>{cap.replace(/&#8217;/g,"’").replace(/&#8216;/g,"‘").replace(/&#8220;/g,"“").replace(/&#8221;/g,"”")}</Text>
-      </View>
-    );
-  }
-
-  if (node.name == 'iframe') {
-      const ifrm = node.attribs;
-      let frameheight = '';
-      const screenwidth = Math.floor(width);
-      const source = ifrm.src;
-      if(source.startsWith('//html5')) {
-        source = 'https:' + source;
-        frameheight = 90;
-      }else{
-        frameheight = 300;
-      }
-      const iframeHtml = `<iframe src="${source}" width="${screenwidth + 40}" height="${frameheight}" frameborder="0"></iframe>`;
-      return (
-        <View key={index} style={{width: screenwidth + 40, height: frameheight, marginLeft: -40, marginRight: -40}}>
-          <WebView source={{html: iframeHtml}} scalesPageToFit={false} style={{width: screenwidth + 40, height: frameheight}}/>
-        </View>
-
-      );
-  }
-  
+    }
 }

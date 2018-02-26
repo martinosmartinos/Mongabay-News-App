@@ -1,7 +1,6 @@
 import React from 'react';
 import { Image, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { observer, inject } from 'mobx-react/native';
-import { Icon } from 'react-native-elements';
 import { Actions } from 'react-native-router-flux';
 import HTMLView from 'react-native-htmlview';
 import format from 'date-fns/format';
@@ -12,12 +11,11 @@ import textStyle from '../helpers/styles';
 
 @inject('StoreSettings')
 @observer
-
 class Card extends React.Component {
 
   imageURL=(item) => {
-    const image = '';
-    const size = '';
+    let image = '';
+    let size = '';
     if((this.props.item._embedded['wp:featuredmedia'][0].code!=="rest_forbidden") && (this.props.item._embedded['wp:featuredmedia'][0].media_details.sizes.medium !== undefined)) {
       this.image = this.props.item._embedded['wp:featuredmedia'][0].media_details.sizes.medium.source_url;
       this.size = 'medium'
@@ -26,7 +24,7 @@ class Card extends React.Component {
       this.size = 'full'
     }else{
       this.image = 0;
-    };
+    }
 
     if ((this.props.item._embedded.hasOwnProperty(['wp:featuredmedia'])) && (this.props.item._embedded['wp:featuredmedia'][0].code!=="rest_forbidden") && (this.image)) {
       image_url = this.image;
@@ -37,9 +35,9 @@ class Card extends React.Component {
   }
 
   bulletPoints=(item) => {
-    bullets = [];
+    let bullets = [];
     for (i = 0; i <= 3; i++) {
-      singlebullet = this.props.item['mog_bullet_'+i+'_mog_bulletpoint'];
+      const singlebullet = this.props.item['mog_bullet_'+i+'_mog_bulletpoint'];
       if(singlebullet.length > 0 ){
         bullets.push(this.props.item['mog_bullet_'+i+'_mog_bulletpoint']);
       }

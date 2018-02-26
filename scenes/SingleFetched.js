@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { toJS } from 'mobx';
-import { ActivityIndicator, Button, Dimensions, View, Text, Image, WebView, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Dimensions, View, Text } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import format from 'date-fns/format';
 import HTMLView from 'react-native-htmlview';
@@ -19,6 +19,10 @@ class SingleFetched extends Component {
 
   render() {
     const fetcheditem = toJS(this.props.StoreSingle);
+    if(fetcheditem.loaded) {
+      Actions.refresh({title: fetcheditem.itemsingle.title.rendered});
+    }
+
     return (
       <HeaderImageScrollView
         maxHeight={(fetcheditem.fetchtype == 'pages') ? 0 : 300}
@@ -51,7 +55,7 @@ class SingleFetched extends Component {
                   <SocialShare excerpt={fetcheditem.itemsingle.excerpt} link={this.props.articleLink} title={fetcheditem.itemsingle.title.rendered.replace(/&#8217;/g,"’").replace(/&#8216;/g,"‘").replace(/&#8220;/g,"“").replace(/&#8221;/g,"”")} />
                 </View>
               </View>
-            </View> : <View style={textStyle().header}><Text style={textStyle().title} >{fetcheditem.itemsingle.title.rendered.replace(/&#8217;/g,"’").replace(/&#8216;/g,"‘").replace(/&#8220;/g,"“").replace(/&#8221;/g,"”")}</Text></View>
+            </View> : null
           }
 
           {(fetcheditem.fetchtype !== 'pages') ?
@@ -69,7 +73,6 @@ class SingleFetched extends Component {
           }
 
           <HTMLView
-            addLineBreaks= {false}
             value={fetcheditem.itemsingle.content.rendered}
             renderNode={renderNode}
             textComponentProps={{ style: textStyle().body }}

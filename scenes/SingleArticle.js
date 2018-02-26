@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Button, Dimensions, View, Text, Image, WebView, ScrollView, StyleSheet, TouchableOpacity,  } from 'react-native';
-import { Scene, Actions } from 'react-native-router-flux';
+import { View, Text } from 'react-native';
+import { Actions } from 'react-native-router-flux';
 import HTMLView from 'react-native-htmlview';
 import HeaderImageScrollView, { TriggeringView } from 'react-native-image-header-scroll-view';
 import { observer, inject } from 'mobx-react/native';
@@ -9,13 +9,12 @@ import SocialShare from '../components/socialshare';
 import renderNode from '../helpers/functions';
 import textStyle from '../helpers/styles';
 
-const {height, width} = Dimensions.get('window');
-
 @inject('StoreTags')
 @observer
 class SingleArticle extends Component {
 
   render() {
+    Actions.refresh({title: this.props.articleTitle});
     return ( 
       <HeaderImageScrollView
         maxHeight={300}
@@ -58,12 +57,13 @@ class SingleArticle extends Component {
           }
         </View>
         <HTMLView
-          addLineBreaks= {false}
+          lineBreak=''
+          paragraphBreak=''
           value={this.props.articleContent}
           renderNode={renderNode}
           textComponentProps={{ style: textStyle().body }}
         />
-        <Divider style={{height: 2, width: 50, backgroundColor: '#000'}}/>
+        <Divider style={{height: 1, width: 50, backgroundColor: '#000', marginTop: 20}}/>
         <View style={textStyle().authorbox}>
           <Text
             onPress={() => {

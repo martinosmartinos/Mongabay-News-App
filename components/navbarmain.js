@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import { Image, Platform, StatusBar, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
-import { Actions } from 'react-native-router-flux'; // 4.0.0-beta.28
-import { Icon } from 'react-native-elements'; // 0.19.0
-
-
-import "@expo/vector-icons"; // 6.3.1
-
+import { Actions } from 'react-native-router-flux';
+import { Icon } from 'react-native-elements';
 
 class MainNavBar extends React.Component {
 

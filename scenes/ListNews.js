@@ -1,31 +1,28 @@
 import React, { Component } from 'react';
-import { ActivityIndicator, RefreshControl, StyleSheet, View } from 'react-native';
-import { toJS, observable, computed } from 'mobx';
+import { ActivityIndicator, RefreshControl, View } from 'react-native';
 import { observer, inject } from 'mobx-react/native';
-import { Actions } from 'react-native-router-flux';
 import Card from '../components/card';
 import SGListView from 'react-native-sglistview';
+import textStyle from '../helpers/styles';
 
 const LIST_VIEW = 'sglistview';
 
-
 @inject('StoreNews')
 @observer
-
 class ListNews extends Component {
-
   _keyExtractor = (item, index) => item.id;
 
-  renderFooter = ()=> {
-    return this.props.StoreNews.loading ? <View style={styles.loader}><ActivityIndicator size="large" /></View> : null
-  }
+  renderFooter = () => {
+    return this.props.StoreNews.loading
+      ? <View style={textStyle().loader}>
+          <ActivityIndicator size="large" />
+        </View>
+      : null;
+  };
 
   renderCard(rowData, sectionID, rowID) {
-    return (
-      <Card item={rowData} key={rowID}/>
-    );
+    return <Card item={rowData} key={rowID} />;
   }
-
 
   render() {
     return (
@@ -49,20 +46,8 @@ class ListNews extends Component {
         onEndReached={this.props.StoreNews.handleLoadMore}
         stickyHeaderIndices={[]}
       />
-    )
+    );
   }
 }
-
-
-const styles = StyleSheet.create({
-  loader: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 50
-  }
-});
-
 
 export default ListNews;

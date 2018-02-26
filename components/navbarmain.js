@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
-import { AsyncStorage, Image, Platform, StatusBar, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
-import { Actions } from 'react-native-router-flux';
-import { Icon } from 'react-native-elements';
+import { Image, Platform, StatusBar, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Actions } from 'react-native-router-flux'; // 4.0.0-beta.28
+import { Icon } from 'react-native-elements'; // 0.19.0
+
+
+import "@expo/vector-icons"; // 6.3.1
 
 
 class MainNavBar extends React.Component {
@@ -9,6 +12,7 @@ class MainNavBar extends React.Component {
     _renderLeft() {
 
         const scenename = Actions.currentScene;
+
         switch(scenename) {
           case '_News':
             return( 
@@ -61,7 +65,7 @@ class MainNavBar extends React.Component {
         )
       } else {
         return(
-          <Text style={[styles.navBarTitle, {fontSize: 14}]}>{this.props.title.toUpperCase()}</Text>
+          <Text numberOfLines={1} style={[styles.navBarTitle, {fontSize: 14}]}>{this.props.title.toUpperCase()}</Text>
         )
       }
     }
@@ -125,7 +129,10 @@ const styles = StyleSheet.create({
     flex: 2,
     alignSelf: 'center',
     alignItems: 'center',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontWeight: 'bold',
+    paddingLeft: 20,
+    paddingRight: 20
   },
   navBarSettings: {
     flex: 1,

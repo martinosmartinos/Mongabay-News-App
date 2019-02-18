@@ -1,95 +1,114 @@
 import React from 'react';
 import { Image, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { observer, inject } from 'mobx-react/native';
+import { action, computed, observable } from 'mobx';
 import { Actions } from 'react-native-router-flux';
 import HTMLView from 'react-native-htmlview';
 import format from 'date-fns/format';
-import SocialShare from './socialshare';
-import SettingsMain from '../scenes/SettingsMain';
-import textStyle from '../helpers/styles';
+import en from 'date-fns/locale/en';
+import es from 'date-fns/locale/es';
+import id from 'date-fns/locale/id';
+import SocialShare from './socialShare';
+import OfflineBookmark from './offlineBookmark';
+import appStyle from '../helpers/styles';
+import { introtrim, imageURL, bulletPoints } from '../helpers/functions';
+import ProgressiveImage from 'react-native-progressive-image';
 
 
 @inject('StoreSettings')
 @observer
+
 class Card extends React.Component {
 
-  imageURL=(item) => {
-    let image = '';
-    let size = '';
-    if((this.props.item._embedded['wp:featuredmedia'][0].code!=="rest_forbidden") && (this.props.item._embedded['wp:featuredmedia'][0].media_details.sizes.medium !== undefined)) {
-      this.image = this.props.item._embedded['wp:featuredmedia'][0].media_details.sizes.medium.source_url;
-      this.size = 'medium'
-    }else if((this.props.item._embedded['wp:featuredmedia'][0].code!=="rest_forbidden") && (this.props.item._embedded['wp:featuredmedia'][0].media_details.sizes.full !== undefined)){
-      this.image = this.props.item._embedded['wp:featuredmedia'][0].media_details.sizes.full.source_url;
-      this.size = 'full'
-    }else{
-      this.image = 0;
+  @observable site = this.props.StoreSettings.site;
+  @observable langcode;
+  @observable bylinePos = this.props.StoreSettings.bylineRepos;
+  @observable topicPos  = this.props.StoreSettings.topicRepos;
+
+  getLocale = () => {
+    let langCode = {};
+    const siteActive = this.props.StoreSettings.site;
+    switch (siteActive) {
+      case 'news.mongabay.com':
+        langCode = { locale: en };
+        break;
+      case 'india.mongabay.com':
+        langCode = { locale: en };
+        break;
+      case 'es.mongabay.com':
+        langCode = { locale: es };
+        break;
+      case 'www.mongabay.co.id':
+        langCode = { locale: id };
+        break;
     }
-
-    if ((this.props.item._embedded.hasOwnProperty(['wp:featuredmedia'])) && (this.props.item._embedded['wp:featuredmedia'][0].code!=="rest_forbidden") && (this.image)) {
-      image_url = this.image;
-    } else {
-      image_url = 0;
-    }
-    return image_url;
-  }
-
-  bulletPoints=(item) => {
-    let bullets = [];
-    for (i = 0; i <= 3; i++) {
-      const singlebullet = this.props.item['mog_bullet_'+i+'_mog_bulletpoint'];
-      if(singlebullet.length > 0 ){
-        bullets.push(this.props.item['mog_bullet_'+i+'_mog_bulletpoint']);
-      }
-    }
-    return bullets;
-  }
-
-
+    return langCode;
+  };
 
   render() {
-    const articleProps = {
-      featuredImage: this.imageURL(),
-      bulletPoints: this.bulletPoints(),
-      bylineName: this.props.item._embedded['wp:term'][5][0].name,
-      bylineSlug: 'filter[byline]=' + this.props.item._embedded['wp:term'][5][0].slug + '&',
-      articleDate: format(this.props.item.date, 'D MMMM YYYY'),
-      articleTitle: this.props.item.title.rendered,
-      articleLink: this.props.item.link,
-      articleContent: this.props.item.content.rendered,
-      articleExcerpt: this.props.item.excerpt.rendered,
-      articleAuthor: this.props.item._embedded['author'][0].name,
-      articleAuthorSlug: 'filter[author]=' + this.props.item._embedded['author'][0].id + '&',
-      articleTopics: this.props.item._embedded['wp:term'][4]
+    let item = this.props.item;
+    let bylineRepos = this.bylinePos;
+    let topicRepos = this.topicPos;
+    let itemByline = item?._embedded['wp:term'][bylineRepos][0]?.name;
+
+    let articleProps = {
+        featuredImage: imageURL(item),
+        featuredID: item.featured_media,
+        bulletPoints: bulletPoints(item),
+        bylineName: itemByline ? itemByline : '',
+        bylineSlug: itemByline ? ('filter[byline]=' + item._embedded['wp:term'][bylineRepos][0].slug + '&') : '',
+        articleID: item.id,
+        articleDate: format(item.date, 'D MMMM YYYY', this.getLocale()),
+        articleTitle: item.title.rendered,
+        articleLink: item.link,
+        articleContent: item.content.rendered,
+        articleExcerpt: item.excerpt.rendered,
+        articleAuthor: item._embedded['author'][0].name,
+        articleAuthorSlug: 'filter[author]=' + item._embedded['author'][0].id + '&',
+        articleTopics: item._embedded['wp:term'][topicRepos]
     };
 
     return (
-      <TouchableWithoutFeedback onPress={()=> Actions.singleArticle(articleProps)}>
-        <View style={textStyle().container}>
-          {(this.imageURL().length > 0) ?
-            <Image
-              source={{uri: this.imageURL()}}
-              style={textStyle().image}
-            /> : null
-          }
-
-          <Text style={textStyle().byline}>{this.props.item._embedded['wp:term'][5][0].name.toUpperCase()}</Text>
-
-          <HTMLView value={this.props.item.title.rendered} textComponentProps={{ style: textStyle().title }}/>
-
-          <HTMLView value={this.props.item.excerpt.rendered} textComponentProps={{ style: textStyle().body }}/>
-
-          <View style={textStyle().bottomContainer}>
-            <Text style={textStyle().date}>{format(this.props.item.date, 'D MMMM YYYY')}</Text>
-            <SocialShare
-              excerpt={this.props.item.excerpt.rendered}
-              link={this.props.item.link}
-              title={this.props.item.title.rendered}
+      !articleProps.articleContent.startsWith('<div><h2>This content is for Monthly') ?
+        <TouchableWithoutFeedback onPress={() => Actions.singlearticle(articleProps)}>
+          <View style={appStyle().cardContainer}>
+            {
+              (articleProps.featuredImage && articleProps.featuredImage.length > 0) ?
+              <ProgressiveImage
+                imageFadeDuration={1000}
+                thumbnailSource={{ uri: item._embedded['wp:featuredmedia'][0].media_details.sizes.thumbnail.source_url }}
+                imageSource={{ uri: imageURL(item) }}
+                style={appStyle().image}
+              /> : <Image source={require('../src/mongabay_placeholder.png')} style={appStyle().image} />
+            }
+            {itemByline ? <Text style={appStyle().byline}>{articleProps.bylineName.toUpperCase()}</Text> : null}
+            <HTMLView
+              value={item.title.rendered}
+              textComponentProps={{ style: appStyle().title }}
             />
+            <HTMLView
+              value={introtrim(item.excerpt.rendered)}
+              textComponentProps={{ style: appStyle().body }}
+            />
+            <View style={appStyle().bottomContainer}>
+              <Text style={appStyle().date}>{format(item.date, 'D MMMM YYYY', this.getLocale())}</Text>
+              <OfflineBookmark
+                itemID={articleProps.articleID}
+                title={item.title.rendered.replace(/&#8217;/g, "’").replace(/&#8216;/g, "‘").replace(/&#8220;/g, "“").replace(/&#8221;/g, "”")}
+                byline={articleProps.bylineName}
+                date={articleProps.articleDate}
+                bullets={articleProps.bulletPoints}
+                content={articleProps.articleContent}
+                author={articleProps.articleAuthor}
+              />
+              <SocialShare
+                excerpt={introtrim(item.excerpt.rendered)}
+                link={item.link}
+                title={item.title.rendered.replace(/&#8217;/g, "’").replace(/&#8216;/g, "‘").replace(/&#8220;/g, "“").replace(/&#8221;/g, "”")}
+              />
+            </View>
           </View>
-
-        </View>
-      </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback> : null
     );
   }
 }

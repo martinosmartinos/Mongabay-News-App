@@ -1,11 +1,9 @@
-import { View, Text, Image, ListView } from 'react-native';
-import { action, computed, observable, useStrict, runInAction } from 'mobx';
-import apiConfig from '../config/api.settings';
-
-useStrict(true);
+import { ListView } from 'react-native';
+import { action, computed, observable, runInAction } from 'mobx';
+import StoreSettings from '../store/StoreSettings';
 
 class StoreTags {
-  @observable site;
+  @observable site = 'news.mongabay.com';
   @observable urlparam;
   @observable listing;
   @observable title;
@@ -17,7 +15,7 @@ class StoreTags {
   ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1.id !== r2.id });
 
   constructor() {
-    this.site = 'news';
+    this.site = StoreSettings.site;
     this.urlparam = '';
     this.listing = [];
     this.title = '';
@@ -25,25 +23,36 @@ class StoreTags {
     this.loading = false;
     this.refreshing = false;
     this.errorMsg = '';
-    this.fetchData()
+    //this.currentSite();
   }
 
-  
+  // @action async currentSite() {
+  //   await AsyncStorage.getItem('site').then(action((result) => {
+  //     if(result) {
+  //       this.site = JSON.parse(result);
+  //       this.fetchData();
+  //     }else{
+  //       this.site = 'news.mongabay.com';
+  //       AsyncStorage.setItem('site', JSON.stringify('news.mongabay.com'));
+  //       this.fetchData();
+  //     }
+  //   }))
+  // }
 
   @computed get dataSource() {
     return this.ds.cloneWithRows(this.listing.slice());
   }
 
   @computed get completeURL(): string {
-     return `https://${this.site}.mongabay.com/${apiConfig.mongabay.wp_api}/${apiConfig.mongabay.posts_route}?${this.urlparam}per_page=${apiConfig.mongabay.per_page}&page=${this.page}&_embed`;
+    return `https://${this.site}/wp-json/wp/v2/posts?${this.urlparam}per_page=10&page=${this.page}&_embed`;
   }
 
-  @action changeURL(newurl) {
+  @action changeURL(newsite, newurl) {
+    this.site = newsite;
     this.urlparam = newurl;
     this.refreshing = true;
     this.fetchData();
   }
-
 
   @action handleRefresh = () => {
     this.page = 1;
@@ -71,13 +80,9 @@ class StoreTags {
         this.errorMsg = '';
 
         if(this.page === 1){
-
           this.listing.replace(responseJson);
-          
         } else {
-
           this.listing.splice(this.listing.length, 0, ...responseJson);
-
         }
 
       })

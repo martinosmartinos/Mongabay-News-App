@@ -1,8 +1,6 @@
+import { AsyncStorage } from 'react-native';
 import { ListView } from 'react-native';
-import { action, computed, observable, useStrict, runInAction } from 'mobx';
-import apiConfig from '../config/api.settings';
-
-useStrict(true);
+import { action, computed, observable, runInAction } from 'mobx';
 
 class StoreNews {
   @observable site;
@@ -16,30 +14,35 @@ class StoreNews {
   ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
 
   constructor() {
-    this.site = 'news';
     this.urlparam = '';
     this.listing = [];
     this.page = 1;
     this.loading = false;
     this.refreshing = false;
     this.errorMsg = '';
-    this.fetchData()
+    this.currentSite();
   }
 
-  @computed get dataSource() {
-    return this.ds.cloneWithRows(this.listing.slice());
+  @action async currentSite() {
+    await AsyncStorage.getItem('site').then(action((result) => {
+      if(result) {
+        this.site = JSON.parse(result);
+        this.fetchData();
+      }else{
+        this.site = 'news.mongabay.com';
+        AsyncStorage.setItem('site', JSON.stringify('news.mongabay.com'));
+        this.fetchData();
+      }
+    }))
   }
 
-  @computed get completeURL(): string {
-    return `https://${this.site}.mongabay.com/${apiConfig.mongabay.wp_api}/${apiConfig.mongabay.posts_route}?${this.urlparam}per_page=${apiConfig.mongabay.per_page}&page=${this.page}&_embed`;
-  }
-
-  @action changeURL(newurl) {
+  @action changeURL(newsite, newurl) {
+    this.site = newsite;
     this.urlparam = newurl;
     this.refreshing = true;
+    console.log('URL Changed to: ', this.site);
     this.fetchData();
   }
-
 
   @action handleRefresh = () => {
     this.page = 1;
@@ -53,11 +56,18 @@ class StoreNews {
     this.fetchData();
   }
     
+  @computed get dataSource() {
+    return this.ds.cloneWithRows(this.listing.slice());
+  }
+
+  @computed get completeURL(): string {
+    return `https://${this.site}/wp-json/wp/v2/posts?${this.urlparam}per_page=10&page=${this.page}&_embed`;
+  }
 
   @action async fetchData() {
 
     try {
-
+      
       if(this.refreshing) this.page = 1;
       const response = await fetch(this.completeURL);
       const responseJson = await response.json();
@@ -70,8 +80,10 @@ class StoreNews {
         
         if(this.page === 1){
           this.listing.replace(responseJson);
+          this.loading = false;
         } else {
           this.listing.splice(this.listing.length, 0, ...responseJson);
+          this.loading = false;
         }
 
       })

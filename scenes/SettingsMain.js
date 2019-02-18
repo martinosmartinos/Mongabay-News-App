@@ -1,32 +1,48 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { AsyncStorage, Text, ScrollView, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { Picker, PickerIOS, Text, ScrollView, View} from 'react-native';
+import { AsyncStorage } from 'react-native';
 import { action, observable } from 'mobx';
-import { observer, inject } from 'mobx-react/native';
+import { observer, inject } from 'mobx-react';
 import { Actions } from 'react-native-router-flux';
-import { Icon, List, ListItem, Slider } from 'react-native-elements';
+import { Button, ListItem, Slider } from 'react-native-elements';
+import IconSvg from '../components/icons';
+import translationStrings from '../components/translation';
+import {getDescendantProp} from '../helpers/functions';
+//import RNRestart from 'react-native-restart';
+import appStyle from '../helpers/styles';
 
-
-@inject('StoreSingle', 'StoreSettings')
+@inject('StoreNews', 'StoreSingle', 'StoreSettings')
 @observer
-
 class SettingsMain extends Component {
   
-  @observable appFont;
-  @observable appNotify;
+  @observable site;
+  @observable font;
+  @observable fontstyle;
+  @observable notify;
+  @observable donate;
+  @observable langcode;
+  @observable pageAbout;
+  @observable pageContact;
+	@observable pageTerms;
+	@observable pagePrivacy;
 
   constructor(props) {
     super(props);
-    this.appFont = this.props.StoreSettings.mainfontsize;
-    this.appNotify = this.props.StoreSettings.notify;
+    const settings = this.props.StoreSettings;
+    this.site = settings.site;
+    this.font = settings.mainfontsize;
+    this.fontstyle = settings.fontstyle;
+    this.notify = settings.notify;
+    this.donate = settings.donate;
+    this.langcode = settings.langcode;
+    this.pageAbout = settings.pageAbout;
+    this.pageContact = settings.pageContact;
+    this.pageTerms = settings.pageTerms;
+    this.pagePrivacy = settings.pagePrivacy;
+  }
 
-    AsyncStorage.getItem('mainfontsize').then(action((result) => {
-      if(result) this.appFont = JSON.parse(result);
-    }));
-
-    AsyncStorage.getItem('notify').then(action((result) => {
-      if(result) this.appNotify = JSON.parse(result);
-    }))
+  onChange = e => {
+    this.updateSite(e.target.site, e.target.value);
   }
 
   onChange = e => {
@@ -34,54 +50,129 @@ class SettingsMain extends Component {
   }
 
   onChange = e => {
+    this.updateFontstyle(e.target.fontstyle, e.target.value);
+  }
+
+  onChange = e => {
     this.updateNotify(e.target.notify, e.target.value);
   }
 
-  @action updateFont = async(value) => {
-    this.appFont = value;
+  onChange = e => {
+    this.updateDonate(e.target.donate, e.target.value);
+  }
+
+  @action updateSite = (value) => {
+    this.props.StoreSettings.langCode(value);
+    this.props.StoreSettings.site = value;
+    this.props.StoreNews.changeURL(value, '');
+    this.props.StoreSingle.site = value;
+    //this.props.StoreTags.site = value;
+    this.site = value;
+
+    //AsyncStorage.removeItem('site');
+    AsyncStorage.setItem('site', JSON.stringify(value));
+    console.log('Base domain changed... ', this.props.StoreSingle.site);
+    //RNRestart.Restart();
+
+  }
+
+  @action updateFont = (value) => {
+    this.font = value;
     this.props.StoreSettings.mainfontsize = value;
     AsyncStorage.setItem('mainfontsize', JSON.stringify(value));
   }
 
+  @action updateFontstyle = (value) => {
+    this.fontstyle = value;
+    this.props.StoreSettings.fontstyle = value;
+    AsyncStorage.setItem('fontstyle', JSON.stringify(value));
+  }
+
   @action updateNotify = (value) => {
-    this.appNotify = value;
+    this.notify = value;
     this.props.StoreSettings.notify = value;
     AsyncStorage.setItem('notify', JSON.stringify(value));
   }
 
+  @action updateDonate = (value) => {
+    this.donate = value;
+    this.props.StoreSettings.donate = value;
+    AsyncStorage.setItem('donate', JSON.stringify(value));
+  }
+
   render() {
     const appver = require('../package.json');
+    const showlang = true;
+    const langcode = this.props.StoreSettings.langcode;
+    const pageabout = this.props.StoreSettings.pageAbout;
+    const pagecontact = this.props.StoreSettings.pageContact;
+    const pageterms = this.props.StoreSettings.pageTerms;
+    const pageprivacy = this.props.StoreSettings.pagePrivacy;
+
     return (
       <ScrollView
         keyboardShouldPersistTaps='always'
-        contentContainerStyle={styles.container}
+        contentContainerStyle={appStyle().setContainer}
       >
-        <Text style={styles.setheader}>GENERAL</Text>
-        <List style={styles.section}>
+        <IconSvg style={{alignSelf: 'center'}} name='Lizard' height="60" width="60" fill="#DDD" viewBox="0 0 60 60" />
+        {
+          showlang &&
+          <Text style={appStyle().setHeader}>{getDescendantProp(translationStrings, 'settings.' + langcode + '.titlesite')}</Text>
+        }
+        {
+          showlang  &&
+          <View style={appStyle().setSection}>
+            <Picker
+              selectedValue={this.site}
+              //style={{ height: 50, width: '100%' }}
+              onValueChange={this.updateSite}
+            >
+              <Picker.Item label="English" value="news.mongabay.com"/>
+              <Picker.Item label="Español" value="es.mongabay.com"/>
+              <Picker.Item label="India" value="india.mongabay.com"/>
+              <Picker.Item label="Indonesian" value="www.mongabay.co.id"/>
+            </Picker>
+          </View>
+        }
+        
+        <Text style={appStyle().setHeader}>{getDescendantProp(translationStrings, 'settings.' + langcode + '.titlegeneral')}</Text>
+        <View style={appStyle().setSection}>
           <ListItem
             avatar={false}
-            title='Receive Notifications'
-            switchButton
-            hideChevron
-            onSwitch = {this.updateNotify}
-            switched = {this.appNotify}
-            leftIcon={{name: 'notifications-active', style: styles.icons}}
-            containerStyle={styles.listitem}
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.notifications')}
+            switch={{
+              value: this.notify,
+              onValueChange: this.updateNotify
+            }}
+            chevron={false}
+            leftIcon={{name: 'notifications-active', style: appStyle().setIcons}}
+            containerStyle={appStyle().setListitem}
           />
           <ListItem
             avatar={false}
-            title='Base Font Size:'
-            hideChevron
-            leftIcon={{name: 'format-size', style: styles.icons}}
-            subtitle='Change the size of a news app text'
-            containerStyle={styles.listitem}
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.font')}
+            switch={{
+              value: this.fontstyle,
+              onValueChange: this.updateFontstyle
+            }}
+            chevron={false}
+            leftIcon={{name: 'format-size', style: appStyle().setIcons}}
+            containerStyle={appStyle().setListitem}
+          />
+          <ListItem
+            avatar={false}
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.fontstyle')}
+            chevron={false}
+            leftIcon={{name: 'format-size', style: appStyle().setIcons}}
+            subtitle={getDescendantProp(translationStrings, 'settings.' + langcode + '.fontstylesub')}
+            containerStyle={appStyle().setListitem}
           />
           <ListItem
             avatar={false}
             title={
               <Slider
-                value={(this.appFont) ? this.appFont : 15}
-                maximumValue={20}
+                value={this.font ? this.font : 15}
+                maximumValue={22}
                 minimumValue={15}
                 thumbTintColor='#2196F3'
                 minimumTrackTintColor='#2196F3'
@@ -89,103 +180,120 @@ class SettingsMain extends Component {
                 onValueChange={this.updateFont}
               />
             }
-            hideChevron
+            chevron={false}
             rightTitle='Mongabay'
             rightTitleNumberOfLines={2}
-            rightTitleStyle={[styles.flexfont, {fontSize: this.props.StoreSettings.mainfontsize}]}
-            containerStyle={styles.listitem}
+            rightTitleStyle={[appStyle().setFlexfont, {fontSize: this.props.StoreSettings.mainfontsize, fontFamily: this.props.StoreSettings.fontstyleName}]}
+            containerStyle={appStyle().setListitem}
           />
-        </List>
-        <Text style={styles.setheader}>INFORMATION</Text>
-        <List style={styles.section}>
           <ListItem
             avatar={false}
-            hideChevron
-            title='About Mongabay'
-            onPress={() => {
-              this.props.StoreSingle.changeURL('pages','13473');
-              Actions.singleFetched();
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.donate')}
+            switch={{
+              value: this.donate,
+              onValueChange: this.updateDonate
             }}
-            leftIcon={{name: 'note', style: styles.icons}}
-            containerStyle={styles.listitem}
+            chevron={false}
+            leftIcon={{name: 'favorite', style: appStyle().setIcons}}
+            containerStyle={appStyle().setListitem}
           />
+        </View>
+        <Text style={appStyle().setHeader}>
+          {getDescendantProp(translationStrings, 'settings.' + langcode + '.titleinfo')}
+        </Text>
+        <View style={appStyle().setSection}>
+          
           <ListItem
             avatar={false}
-            hideChevron
-            title='Terms and Conditions'
+            chevron={false}
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.about')}
             onPress={() => {
-              this.props.StoreSingle.changeURL('pages','12718');
-              Actions.singleFetched();
+              this.props.StoreSingle.changeURL('pages', pageabout);
+              this.props.StoreSingle.fetchData();
+              Actions.singlefetched();
             }}
-            leftIcon={{name: 'format-list-numbered', style: styles.icons}}
-            containerStyle={styles.listitem}
+            leftIcon={{name: 'note', style: appStyle().setIcons}}
+            containerStyle={appStyle().setListitem}
           />
+          
           <ListItem
+          //TODO add tems page per language
             avatar={false}
-            hideChevron
-            title='Privacy Policy'
+            chevron={false}
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.terms')}
             onPress={() => {
-              this.props.StoreSingle.changeURL('pages','12723');
-              Actions.singleFetched();
+              this.props.StoreSingle.changeURL('pages', pageterms);
+              this.props.StoreSingle.fetchData();
+              Actions.singlefetched();
             }}
-            leftIcon={{name: 'fingerprint', style: styles.icons}}
-            containerStyle={styles.listitem}
+            leftIcon={{name: 'format-list-numbered', style: appStyle().setIcons}}
+            containerStyle={appStyle().setListitem}
           />
+          
           <ListItem
+          //TODO add privacy page per language
             avatar={false}
-            hideChevron
-            title='Contact Us'
+            chevron={false}
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.privacy')}
             onPress={() => {
-              this.props.StoreSingle.changeURL('pages','250');
-              Actions.singleFetched();
+              this.props.StoreSingle.changeURL('pages', pageprivacy);
+              this.props.StoreSingle.fetchData();
+              Actions.singlefetched();
             }}
-            leftIcon={{name: 'email', style: styles.icons}}
-            containerStyle={styles.listitem}
+            leftIcon={{name: 'fingerprint', style: appStyle().setIcons}}
+            containerStyle={appStyle().setListitem}
           />
+          
+          <ListItem
+            //TODO add contact page per language
+            avatar={false}
+            chevron={false}
+            title={getDescendantProp(translationStrings, 'settings.' + langcode + '.contact')}
+            onPress={() => {
+              this.props.StoreSingle.changeURL('pages', pagecontact);
+              this.props.StoreSingle.fetchData();
+              Actions.singlefetched();
+            }}
+            leftIcon={{name: 'email', style: appStyle().setIcons}}
+            containerStyle={appStyle().setListitem}
+          />
+        </View>
+        <Text style={appStyle().setHeader}>
+          {getDescendantProp(translationStrings, 'settings.' + langcode + '.titleabout')}
+        </Text>
+        <View style={appStyle().setSection}>
           <ListItem
             avatar={false}
-            hideChevron
-            titleNumberOfLines={1}
+            chevron={false}
+            titleNumberOfLines={2}
             subtitleNumberOfLines={2}
-            title={'Mongabay News v' + appver.version}
-            subtitle={appver.description + ' ' + appver.author}
-            containerStyle={styles.listitem}
+            title={appver.description + ' ' + appver.author}
+            subtitle={'v' + appver.version + ' Build Date 12/02/2019'}
+            containerStyle={appStyle().setListitem}
           />
-        </List>
+        </View>
+        <Button
+          //TODO removing settings per language
+          title={getDescendantProp(translationStrings, 'settings.' + langcode + '.buttondefaults')}
+          raised
+          backgroundColor='#2196F3'
+          containerViewStyle={{marginTop: 40}}
+          icon={{name: 'cached'}}
+          onPress={()=>{
+            AsyncStorage.removeItem('site'),
+            this.updateSite('news.mongabay.com'),
+            AsyncStorage.removeItem('notify'),
+            this.updateNotify(true),
+            AsyncStorage.removeItem('mainfontsize'),
+            this.updateFont(15),
+            AsyncStorage.removeItem('fontstyle'),
+            this.updateFontstyle(true)}
+          }
+        />
       </ScrollView>
     )
   }
 
 }
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#FFF'
-  },
-  flexfont: {
-    color: '#000'
-  },
-  section: {
-    marginTop: 0,
-    paddingTop: 40,
-    paddingBottom: 40,
-    borderTopWidth: 0,
-    borderBottomWidth: 0
-  },
-  listitem: {
-    borderTopWidth: 0,
-    borderBottomWidth: 0
-  },
-  setheader: {
-    fontSize: 15,
-    color: '#DDD'
-  },
-  icons: {
-    color: '#2196F3'
-  }
-});
 
 export default SettingsMain;
